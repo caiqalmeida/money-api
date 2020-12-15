@@ -16,9 +16,4 @@ app.use(morgan('dev'));
 app.use('/api/v1/expenses', expenseRouter);
 app.use('/api/v1/users', userRouter);
 
-// Server
-const port = 3000;
-
-app.listen(port, (req, res) => {
-  console.log('MONEY API: Running on port 3000');
-});
+module.exports = app;
