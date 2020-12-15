@@ -4,6 +4,18 @@ const expenses = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/expenses.json`)
 );
 
+exports.checkId = (req, res, next, value) => {
+  const id = value;
+  const expense = expenses.find((ex) => ex.id === Number(id));
+
+  if (!expense)
+    return res.status(404).json({
+      message: 'Choose a valid id',
+    });
+
+  next();
+};
+
 exports.getAllExpenses = (req, res) => {
   res.status(200).json({
     status: 'success',
@@ -18,12 +30,7 @@ exports.getExpense = (req, res) => {
   const { id } = req.params;
   const expense = expenses.find((ex) => ex.id === Number(id));
 
-  if (!expense)
-    return res.status(404).json({
-      message: 'Choose a valid id',
-    });
-
-  return res.status(200).json({
+  res.status(200).json({
     status: 'success',
     data: {
       expense,
@@ -50,32 +57,15 @@ exports.createExpense = (req, res) => {
   );
 };
 
-exports.updateExpense = (req, res) => {
-  const { id } = req.params;
-  const expense = expenses.find((ex) => ex.id === Number(id));
-
-  if (!expense)
-    return res.status(404).json({
-      message: 'Choose a valid id',
-    });
-
-  return res.status(200).json({
+exports.updateExpense = (req, res) =>
+  res.status(200).json({
     status: 'success',
     data: {
       expense: '<Updated expense here ...>',
     },
   });
-};
 
 exports.deleteExpense = (req, res) => {
-  const { id } = req.params;
-  const expense = expenses.find((ex) => ex.id === Number(id));
-
-  if (!expense)
-    return res.status(404).json({
-      message: 'Choose a valid id',
-    });
-
   res.status(204).json({
     status: 'success',
     data: null,

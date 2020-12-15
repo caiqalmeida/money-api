@@ -4,6 +4,8 @@ const expenseController = require('../controllers/expenseController');
 
 const router = express.Router();
 
+router.param('id', expenseController.checkId);
+
 router
   .route('/')
   .get(expenseController.getAllExpenses)
