@@ -10,7 +10,10 @@ const app = express();
 // Middlewares
 // Create a req.body object, that is parsed from the request body
 app.use(express.json());
-app.use(morgan('dev'));
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 // Routes
 app.use('/api/v1/expenses', expenseRouter);

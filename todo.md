@@ -11,8 +11,6 @@ API que irá aceitar a manipulação das depesas, conectadas a um banco mongodb
 
 ---
 
-# Parei na criação de uma nova despesa
-
 # TO DO
 
 [X] Criar um banco de dados

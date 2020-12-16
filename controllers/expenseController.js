@@ -16,6 +16,20 @@ exports.checkId = (req, res, next, value) => {
   next();
 };
 
+exports.checkBody = (req, res, next) => {
+  const { date, value, category, description } = req.body;
+
+  if (!date || !value || !category || !description) {
+    return res.status(404).json({
+      status: 'fail',
+      message:
+        'The fields : date, value, category and description are obrigatory',
+    });
+  }
+
+  next();
+};
+
 exports.getAllExpenses = (req, res) => {
   res.status(200).json({
     status: 'success',

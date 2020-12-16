@@ -9,7 +9,7 @@ router.param('id', expenseController.checkId);
 router
   .route('/')
   .get(expenseController.getAllExpenses)
-  .post(expenseController.createExpense);
+  .post(expenseController.checkBody, expenseController.createExpense);
 router
   .route('/:id')
   .get(expenseController.getExpense)
