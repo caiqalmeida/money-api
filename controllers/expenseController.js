@@ -3,21 +3,16 @@ const Expense = require('../models/expenseModel');
 exports.getAllExpenses = async (req, res) => {
   try {
     // BUILD QUERY
+    // 1) Filtering
     const queryObj = { ...req.query };
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    const query = Expense.find(queryObj);
-    // const query = await Expense.find({
-    //   category: 'alimentação',
-    //   value: 550
-    // })
+    // 2) Advanced filtering - Insertirg $ before operators passed in endpoint
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-    // const query = await Expense.find()
-    //   .where('category')
-    //   .equals('alimentação')
-    //   .where('value')
-    //   .equals('550');
+    const query = Expense.find(JSON.parse(queryStr));
 
     // EXECUTE QUERY
     const expenses = await query;
