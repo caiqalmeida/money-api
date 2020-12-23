@@ -20,39 +20,6 @@ mongoose
   })
   .then(() => console.log('DB connection successful!'));
 
-const expenseSchema = new mongoose.Schema({
-  category: {
-    type: String,
-    required: [true, 'A expense must have a category'],
-  },
-  value: {
-    type: Number,
-    required: [true, 'A expense must have a value'],
-  },
-  description: {
-    type: String,
-    required: [true, 'A expense must have a description'],
-  },
-  date: {
-    type: Date,
-    required: [true, 'A expense must have a date'],
-  },
-});
-
-const Expense = mongoose.model('Expense', expenseSchema);
-
-const testExpense = new Expense({
-  date: '2020-12-16',
-  description: 'Almoço top',
-  value: 50,
-  category: 'Alimentação',
-});
-
-testExpense
-  .save()
-  .then((doc) => console.log(doc))
-  .catch((err) => console.log('Error: ', err));
-
 const port = process.env.PORT || 3000;
 
 app.listen(port, (req, res) => {

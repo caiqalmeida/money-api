@@ -1,87 +1,113 @@
-const fs = require('fs');
+const Expense = require('../models/expenseModel');
 
-const expenses = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/expenses.json`)
-);
+exports.getAllExpenses = async (req, res) => {
+  try {
+    // BUILD QUERY
+    const queryObj = { ...req.query };
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    excludedFields.forEach((el) => delete queryObj[el]);
 
-exports.checkId = (req, res, next, value) => {
-  const id = value;
-  const expense = expenses.find((ex) => ex.id === Number(id));
+    const query = Expense.find(queryObj);
+    // const query = await Expense.find({
+    //   category: 'alimentação',
+    //   value: 550
+    // })
 
-  if (!expense)
-    return res.status(404).json({
-      message: 'Choose a valid id',
+    // const query = await Expense.find()
+    //   .where('category')
+    //   .equals('alimentação')
+    //   .where('value')
+    //   .equals('550');
+
+    // EXECUTE QUERY
+    const expenses = await query;
+
+    // SEND RESPONSE
+    res.status(200).json({
+      status: 'success',
+      results: expenses.length,
+      data: {
+        expenses,
+      },
     });
-
-  next();
-};
-
-exports.checkBody = (req, res, next) => {
-  const { date, value, category, description } = req.body;
-
-  if (!date || !value || !category || !description) {
-    return res.status(404).json({
+  } catch (err) {
+    res.status(400).json({
       status: 'fail',
-      message:
-        'The fields : date, value, category and description are obrigatory',
+      message: err,
     });
   }
-
-  next();
 };
 
-exports.getAllExpenses = (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    results: expenses.length,
-    data: {
-      expenses,
-    },
-  });
+exports.getExpense = async (req, res) => {
+  try {
+    const expense = await Expense.findById(req.params.id);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        expense,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
-exports.getExpense = (req, res) => {
-  const { id } = req.params;
-  const expense = expenses.find((ex) => ex.id === Number(id));
+exports.createExpense = async (req, res) => {
+  try {
+    const newExpense = await Expense.create(req.body);
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      expense,
-    },
-  });
+    res.status(201).json({
+      status: 'success',
+      data: {
+        expense: newExpense,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: 'invalid data sent',
+      error: err,
+    });
+  }
 };
 
-exports.createExpense = (req, res) => {
-  const newId = expenses[expenses.length - 1].id + 1;
-  const newExpense = { id: newId, ...req.body };
+exports.updateExpense = async (req, res) => {
+  try {
+    const expense = await Expense.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
-  expenses.push(newExpense);
-  fs.writeFile(
-    `${__dirname}/../dev-data/data/expenses.json`,
-    JSON.stringify(expenses),
-    (err) => {
-      res.status(201).json({
-        status: 'success',
-        data: {
-          expense: newExpense,
-        },
-      });
-    }
-  );
+    res.status(200).json({
+      status: 'success',
+      data: {
+        expense,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: 'invalid data sent',
+    });
+  }
 };
 
-exports.updateExpense = (req, res) =>
-  res.status(200).json({
-    status: 'success',
-    data: {
-      expense: '<Updated expense here ...>',
-    },
-  });
+exports.deleteExpense = async (req, res) => {
+  try {
+    await Expense.findByIdAndDelete(req.params.id);
 
-exports.deleteExpense = (req, res) => {
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
+    res.status(204).json({
+      status: 'success',
+      data: null,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: 'invalid data sent',
+    });
+  }
 };
