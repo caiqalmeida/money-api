@@ -1,18 +1,59 @@
 const Expense = require('../models/expenseModel');
 
+exports.aliasTopExpenses = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-value';
+  req.query.fields = 'date, category, description, value';
+  next();
+};
+
 exports.getAllExpenses = async (req, res) => {
   try {
     // BUILD QUERY
-    // 1) Filtering
+    // 1A) Filtering
     const queryObj = { ...req.query };
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    // 2) Advanced filtering - Insertirg $ before operators passed in endpoint
+    // 1B) Advanced filtering - Insertirg $ before operators passed in endpoint
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-    const query = Expense.find(JSON.parse(queryStr));
+    let query = Expense.find(JSON.parse(queryStr));
+
+    // 2) Sorting - you can send alot of sort parameters, one by another, followd by a comma
+    // ex : /expenses/?sort=date,value
+    // We can inclusively, add a - signal before the parameter, and descend the sorting
+    // ex : /expenses/?sort=-date,value
+
+    if (req.query.sort) {
+      const sortBy = req.query.sort.replaceAll(',', ' ');
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort('-createdAt');
+    }
+
+    // 3) Limiting fields - you can choose all the fields that you want
+    // If you add the - signal before the field, you just exclude them to be included
+
+    if (req.query.fields) {
+      const fields = req.query.fields.replaceAll(',', ' ');
+      query = query.select(fields);
+    } else {
+      query = query.select('-__v');
+    }
+
+    // 4) Pagination
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numExpenses = await Expense.countDocuments();
+      if (skip >= numExpenses) throw new Error('This page does not exist');
+    }
 
     // EXECUTE QUERY
     const expenses = await query;
