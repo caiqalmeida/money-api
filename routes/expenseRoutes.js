@@ -6,6 +6,8 @@ const router = express.Router();
 
 // router.param('id', expenseController.checkId);
 
+router.route('/expenses-stats').get(expenseController.getExpensesStats);
+
 router
   .route('/top-5-expenses')
   .get(expenseController.aliasTopExpenses, expenseController.getAllExpenses);

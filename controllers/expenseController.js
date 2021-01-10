@@ -107,3 +107,36 @@ exports.deleteExpense = async (req, res) => {
     });
   }
 };
+
+exports.getExpensesStats = async (req, res) => {
+  try {
+    const stats = await Expense.aggregate([
+      {
+        $match: { value: { $gte: 0 } },
+      },
+      {
+        $group: {
+          _id: { $toUpper: '$category' },
+          // _id: '$category',
+          numExpenses: { $sum: 1 },
+          avgValue: { $avg: '$value' },
+          minValue: { $min: '$value' },
+          maxValue: { $max: '$value' },
+        },
+      },
+      {
+        $sort: { value: 1 },
+      },
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: stats,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: 'was not possible to get stats',
+    });
+  }
+};
